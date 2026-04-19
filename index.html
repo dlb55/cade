@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cade's Care Assistant 👶</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Nunito+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --sky: #e8f4fd;
+    --sky-mid: #bde0f7;
+    --blue: #3a96d8;
+    --blue-dark: #2278b5;
+    --mint: #d6f5eb;
+    --mint-mid: #7ddcba;
+    --green: #2bbf8a;
+    --peach: #fff0e8;
+    --orange: #f4845f;
+    --yellow: #fff9e0;
+    --gold: #f5c842;
+    --text: #1e2a38;
+    --text-muted: #5a7080;
+    --surface: #ffffff;
+    --bg: #f0f7ff;
+    --border: rgba(58,150,216,0.15);
+    --shadow: 0 4px 20px rgba(30,42,56,0.08);
+    --shadow-lg: 0 8px 40px rgba(30,42,56,0.12);
+    --radius: 18px;
+    --radius-sm: 10px;
+  }
+
+  html, body {
+    height: 100%;
+    font-family: 'Nunito Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* Soft cloud-like background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 10% 10%, #d6eeff 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 90% 80%, #d6f5eb 0%, transparent 60%),
+      radial-gradient(ellipse 50% 60% at 50% 50%, #fff9e0 0%, transparent 70%);
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  #app {
+    position: relative;
+    z-index: 1;
+    max-width: 700px;
+    margin: 0 auto;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 16px 16px 0;
+  }
+
+  /* ---- Header ---- */
+  #header {
+    background: var(--surface);
+    border-radius: var(--radius) var(--radius) 0 0;
+    border: 1px solid var(--border);
+    border-bottom: none;
+    padding: 18px 22px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: var(--shadow);
+  }
+
+  #header-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--sky-mid), var(--mint-mid));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(58,150,216,0.2);
+  }
+
+  #header-text h1 {
+    font-family: 'Nunito', sans-serif;
+    font-size: 19px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  #header-text p {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    font-weight: 500;
+  }
+
+  #status {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--green);
+    font-weight: 600;
+    background: var(--mint);
+    padding: 4px 10px;
+    border-radius: 20px;
+    flex-shrink: 0;
+  }
+
+  #status::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* ---- Messages ---- */
+  #messages {
+    flex: 1;
+    overflow-y: auto;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    padding: 20px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    scroll-behavior: smooth;
+  }
+
+  #messages::-webkit-scrollbar { width: 4px; }
+  #messages::-webkit-scrollbar-track { background: transparent; }
+  #messages::-webkit-scrollbar-thumb { background: var(--sky-mid); border-radius: 4px; }
+
+  .msg {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    animation: fadeUp 0.25s ease;
+  }
+
+  .msg.user { flex-direction: row-reverse; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--sky-mid), var(--mint-mid));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(58,150,216,0.15);
+  }
+
+  .bubble {
+    max-width: 75%;
+    padding: 11px 16px;
+    border-radius: 18px;
+    font-size: 14.5px;
+    line-height: 1.6;
+  }
+
+  .msg.bot .bubble {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-bottom-left-radius: 4px;
+    box-shadow: var(--shadow);
+  }
+
+  .msg.user .bubble {
+    background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+    color: white;
+    border-bottom-right-radius: 4px;
+    box-shadow: 0 4px 14px rgba(58,150,216,0.3);
+  }
+
+  /* ---- Quick chips ---- */
+  #chips-wrap {
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    padding: 0 18px 12px;
+  }
+
+  #chips-label {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+    padding-top: 2px;
+  }
+
+  #chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .chip {
+    font-family: 'Nunito', sans-serif;
+    font-size: 12.5px;
+    font-weight: 700;
+    padding: 6px 13px;
+    border-radius: 20px;
+    border: 1.5px solid var(--sky-mid);
+    background: var(--sky);
+    color: var(--blue-dark);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  .chip:hover {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(58,150,216,0.25);
+  }
+
+  .chip:active { transform: translateY(0); }
+
+  /* ---- Input area ---- */
+  #input-area {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0 0 var(--radius) var(--radius);
+    padding: 12px 14px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+
+  #user-input {
+    flex: 1;
+    border: 1.5px solid var(--sky-mid);
+    border-radius: 22px;
+    padding: 10px 18px;
+    font-size: 14.5px;
+    font-family: 'Nunito Sans', sans-serif;
+    resize: none;
+    min-height: 42px;
+    max-height: 110px;
+    outline: none;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  #user-input::placeholder { color: #9ab4c8; }
+
+  #user-input:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(58,150,216,0.12);
+    background: white;
+  }
+
+  #send-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    box-shadow: 0 3px 12px rgba(58,150,216,0.3);
+  }
+
+  #send-btn:hover { transform: scale(1.06); box-shadow: 0 5px 16px rgba(58,150,216,0.4); }
+  #send-btn:active { transform: scale(0.97); }
+  #send-btn:disabled { opacity: 0.4; cursor: default; transform: none; }
+
+  #send-btn svg { width: 18px; height: 18px; fill: white; }
+
+  /* ---- Typing indicator ---- */
+  .typing-bubble {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    border-bottom-left-radius: 4px;
+    padding: 13px 18px;
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    box-shadow: var(--shadow);
+  }
+
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--sky-mid);
+    animation: bounce 1.3s infinite ease-in-out;
+  }
+  .dot:nth-child(2) { animation-delay: 0.18s; }
+  .dot:nth-child(3) { animation-delay: 0.36s; }
+
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); background: var(--sky-mid); }
+    30% { transform: translateY(-6px); background: var(--blue); }
+  }
+
+  /* ---- Footer tag ---- */
+  #footer {
+    text-align: center;
+    font-size: 11.5px;
+    color: var(--text-muted);
+    padding-bottom: 10px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ---- API Key prompt ---- */
+  #key-screen {
+    position: fixed;
+    inset: 0;
+    background: rgba(240,247,255,0.96);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    backdrop-filter: blur(6px);
+  }
+
+  #key-card {
+    background: white;
+    border-radius: 24px;
+    padding: 36px 32px;
+    max-width: 420px;
+    width: 100%;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
+    text-align: center;
+  }
+
+  #key-card .icon { font-size: 48px; margin-bottom: 16px; }
+  #key-card h2 {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  #key-card p {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 22px;
+    line-height: 1.6;
+  }
+
+  #api-key-input {
+    width: 100%;
+    border: 1.5px solid var(--sky-mid);
+    border-radius: 12px;
+    padding: 11px 16px;
+    font-size: 14px;
+    font-family: 'Nunito Sans', sans-serif;
+    outline: none;
+    color: var(--text);
+    background: var(--bg);
+    margin-bottom: 14px;
+    transition: border-color 0.2s;
+  }
+
+  #api-key-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(58,150,216,0.12); }
+
+  #key-submit {
+    width: 100%;
+    padding: 13px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+    color: white;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 0 4px 14px rgba(58,150,216,0.3);
+  }
+
+  #key-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(58,150,216,0.4); }
+
+  #key-note {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 14px;
+    line-height: 1.5;
+  }
+
+  #key-error {
+    color: var(--orange);
+    font-size: 13px;
+    margin-top: 8px;
+    display: none;
+  }
+
+  @media (max-width: 500px) {
+    #app { padding: 10px 10px 0; }
+    .bubble { max-width: 88%; }
+    #header-text h1 { font-size: 16px; }
+    #status { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- API Key Screen -->
+<div id="key-screen">
+  <div id="key-card">
+    <div class="icon">👶</div>
+    <h2>Cade's Care Assistant</h2>
+    <p>Hi Mimi & Papa! To get started, you'll need an Anthropic API key. Drew or Sara can provide this — it lets the assistant answer all your questions about Cade!</p>
+    <input id="api-key-input" type="password" placeholder="Paste your API key here (sk-ant-...)" autocomplete="off" />
+    <div id="key-error">That doesn't look quite right — check the key and try again!</div>
+    <button id="key-submit" onclick="submitKey()">Let's go! 🚀</button>
+    <p id="key-note">Your key is stored only in your browser session and never sent anywhere except directly to Anthropic.</p>
+  </div>
+</div>
+
+<div id="app">
+  <div id="header">
+    <div id="header-icon">👶</div>
+    <div id="header-text">
+      <h1>Cade's Care Assistant</h1>
+      <p>For Mimi & Papa — ask me anything about Cade!</p>
+    </div>
+    <div id="status">Ready to help</div>
+  </div>
+
+  <div id="messages">
+    <div class="msg bot">
+      <div class="msg-avatar">👶</div>
+      <div class="bubble">Hi Mimi & Papa! 👋 I'm your helper while Drew & Sara are on their honeymoon. I've read all of Cade's care instructions and I'm ready to answer your questions! Try one of the quick buttons below, or just type whatever's on your mind. 💛</div>
+    </div>
+  </div>
+
+  <div id="chips-wrap">
+    <div id="chips-label">Quick questions</div>
+    <div id="chips">
+      <div class="chip" onclick="askChip('What is the bedtime routine?')">🌙 Bedtime routine</div>
+      <div class="chip" onclick="askChip('What does Cade eat for breakfast?')">🍳 Breakfast ideas</div>
+      <div class="chip" onclick="askChip('How do I handle a diaper change?')">🧷 Diaper tips</div>
+      <div class="chip" onclick="askChip('What is the morning routine on daycare days?')">☀️ Morning routine</div>
+      <div class="chip" onclick="askChip('What are fun things to do with Cade on the weekend?')">🎉 Weekend activities</div>
+      <div class="chip" onclick="askChip('What are the important contacts I should know?')">📞 Important contacts</div>
+      <div class="chip" onclick="askChip('How do I care for Benji the dog?')">🐶 Benji care</div>
+      <div class="chip" onclick="askChip('What do I do if Cade is being fussy?')">😢 If he\'s fussy</div>
+      <div class="chip" onclick="askChip('What is the nap routine on weekends?')">😴 Nap routine</div>
+      <div class="chip" onclick="askChip('What should I pack in the diaper bag?')">🎒 Diaper bag</div>
+    </div>
+  </div>
+
+  <div id="input-area">
+    <textarea id="user-input" placeholder="Ask anything about Cade's care…" rows="1"></textarea>
+    <button id="send-btn" onclick="sendMessage()">
+      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  </div>
+
+  <div id="footer">Made with ❤️ for Mimi & Papa · Powered by Claude AI</div>
+</div>
+
+<script>
+const SYSTEM_PROMPT = `You are a warm, friendly assistant named "Cade's Care Assistant" helping grandparents Mimi (Jeanine) and Papa (Randy) care for baby Cade LaBelle while his parents Drew & Sara are on their honeymoon in Europe. 
+
+Answer questions based ONLY on the care instructions below. Keep answers clear, warm, practical, and reassuring. Use a friendly tone — these are loving grandparents, not medical professionals. If something isn't covered in the instructions, say so kindly and suggest they text Drew or Sara.
+
+CARE INSTRUCTIONS:
+
+=== TRAVEL INFO ===
+Drew & Sara's trip: 4/30–5/3 Barcelona (Kimpton Vividora Hotel), 5/3–5/10 Norwegian Epic Cruise (Spain→France→Italy), 5/10–5/13 Rome (Dharma Luxury Hotel & Spa). Full honeymoon site: https://dlb55.github.io/hm26/
+
+=== IMPORTANT CONTACTS ===
+Cade James LaBelle: Birthday 12/20/24. Blood Type: B-. No known allergies. Motrin (Children's Ibuprofen) dosage: 3ML.
+Insurance (BCBS thru Sara @ R1): Group #200760 / ID #HJH820685039
+
+iKid Academy Daycare: 16992 E Quincy Ave, Aurora CO 80015. Hours: 7:00–5:30 M–F. Drop off: 7:00–8:30am. Pick up: 4:00–5:30pm. Olga (main text contact): 720-300-8005. Front desk: 303-680-4543. Both Mimi and Papa are on the approved pick-up list.
+
+Pediatrician — Rocky Mountain Health Centers: 14001 E Iliff Ave #210, Aurora CO 80014. Hours: 8–5 M–F, 8–Noon Sat. Dr. Kimberly Mourani (any dr is fine). Phone: 303-996-9601. Both grandparents have medical clearance to schedule and treat.
+
+Children's Hospital Colorado: 13123 E 16th Ave, Aurora CO 80045. Phone: 720-777-1234.
+
+Seven Hills Veterinary (Benji): 18325 E Girard Ave, Aurora CO 80013. Phone: 303-699-1600.
+
+Friends/Family:
+- Tanya Boyer: 2830 N. Josephine St., Denver CO 80205. Phone: 720-629-2632. (Out of town first weekend)
+- Danielle Beaudoin (Sara's friend, 20 min away): 4708 Joplin St, Denver CO 80239. Phone: 775-220-5863
+- Steph Jarvis (Sara's friend from ISU, 35 min away): 6786 Green Ct, Denver CO 80221. Phone: 847-875-1599
+- Adam Horst (Drew's disc buddy, 5 min away): Phone: 970-445-7813
+
+Babysitters (come to house — give them a care refresher):
+- Suzanne: 303-521-7778
+- Haleigh: 970-852-8923 (brings her son Henry, similar age to Cade)
+
+=== BENJI (THE DOG) CARE ===
+Potty: Goes outside right away in morning, in/out throughout day. Can go up to 8 hours without issue. Taps the back door when he needs to go out. Sometimes just wants to sunbathe.
+Food: Keep food bowl full (he grazes). Add wet food ~2x/week or as you remember. He sometimes sits in front of the pantry expecting a treat. Give treats without overdoing it. Leftovers of Cade's meals (if dog-friendly) count as a treat.
+IMPORTANT: Keep human food out of reach — against the wall and center of counter. Keep pantry door closed. No food in bedrooms. No chocolate in the office with the door open. He'll try to steal food right out of Cade's hand or off his plate!
+Water: Prefers his bowl clean with fresh water.
+Sleep: Sleeps in the master bedroom — either in the closet or under the bed.
+
+=== CADE AT-A-GLANCE ===
+Weekdays (daycare): ~1 hour in morning, ~2 hours at night. Daycare handles the daytime.
+Weekends: More involved — changes of scenery help break up the day.
+Diapers: 1–3 dirty diapers/day, 4–6+ wet diapers/day.
+Bottles: 8oz organic whole milk in morning and before bed/naps.
+Other meals: Regular solid food with water in a sippy cup.
+Sleep: 12 hours/night (typical 7pm–7am), plus ~2–3 hours daytime sleep.
+If fussy: Ask yourself — is he hungry? Thirsty? Needs a diaper change? Has a fever?
+If still fussy: Try Ms. Rachel (Netflix), HeyBear (YouTube), or Trash Truck (Netflix).
+
+=== COGNITIVE / SOCIAL / LANGUAGE ===
+- He's exploratory — learning cause and effect. Misbehavior is curiosity, not mischief.
+- Independent play is important — if he's focused on something, don't interrupt.
+- Use short statements, not questions: "The ball is red" not "What color is the ball?" / "The ball rolled behind you" not "Where's the ball?"
+- Model manners — say "Please" and "Thank you" even if just talking to yourself.
+
+=== PHYSICAL DEVELOPMENT ===
+- Walking (might be running by May!).
+- Pretty good at lowering himself off furniture. Handles stone steps to backyard well.
+- Loves crawling UP the stairs — great activity if he's fussy! Stand behind him, hold the handrail, let him explore upstairs a bit, then bring him back down. He very rarely slips — your presence is mostly just-in-case.
+- He has a 6th sense about open stair gates — keep them closed when not actively on the stairs.
+- Likes sensory activities: water/splashing, building blocks, etc.
+- Can be resistant to car seat, high chair, stroller — hold tight, force him into position. He'll calm down.
+
+=== WEEKDAY ROUTINE (DAYCARE DAYS) ===
+Daycare is a 10–15 min drive. Drop off 7–8:30am, pick up 4–5:30pm. You can adjust timing based on how the morning goes.
+
+MORNING:
+- ~7:00am – He wakes up. Can vary ~1 hour either direction (usually later).
+- If he wakes early and cries — give him a few minutes, he often calms himself.
+- Pro tip: Start warming the bottle before you get him so it's ready when you come downstairs.
+- SPECIAL RITUAL: Walk into his room, say good morning, go straight to open the blinds, wave out the window and say "Good morning, world!" / "Hello, world!" — he usually smiles. Then get him out of the crib.
+- Take him downstairs, change his diaper on the changing table.
+- Warm up his bottle (8oz / 6 min). Sit him on the couch slightly leaned back — he'll hold it himself. When he's done, grab the bottle back; distract him if he gets upset.
+- Play with him, then strap him in the high chair (buckled!), bib on, give him breakfast.
+- Get him ready: wipe face & hands (warm paper towel or Aveeno wipe), lotion or Aquaphor on cheeks if needed, outfit + socks + shoes.
+- Monday bag: clean baby sheet, blanket, sippy cup, sun hat (plus anything noted on daycare's daily report).
+- Can skip play/breakfast if running late — iKid feeds breakfast too.
+
+EVENING:
+- Pick him up between 4–5:30pm.
+- When home: use blue Honest wipes on hands only. Aveeno wipes for face.
+- Change diaper if needed. Give a small snack (puzzle container is great to entertain him).
+- Strap him in high chair for dinner. Offer water throughout.
+- Clean up: warm paper towel or Aveeno wipe. Get him out, clean high chair (Benji handles floor scraps!).
+- Put him in pajamas, clean diaper, diaper cream before bed.
+- Let him run and play.
+- Heat up bottle (8oz / 6 min) — heat it in advance because he can go from 0 to fussy fast. Give it on the couch.
+- Start bedtime routine around 6:50pm. Bedtime goal: 7pm.
+
+=== WEEKEND ROUTINE ===
+Morning is the same as weekday. He may sleep until 7:30 or 8 — fingers crossed!
+Around 8:45: May get fussy/bored. Snack + Ms. Rachel for ~2 episodes buys time.
+~9:15: Get ready and do a morning change of scenery.
+By 10:45/11: Return and start nap routine (full belly + bottle beforehand helps nap length).
+~2:00pm: After nap — diaper, lunch, play, change of scenery.
+Evening: same as weekday.
+
+NAP INFO:
+- Wake windows: ~4 hours. First nap ~4 hours after waking. All naps should end ~4 hours before bedtime.
+- Goal: 2–3 hours total daytime sleep. Ideally one long nap from ~11am–2pm.
+- If he wakes after 45min–1hr: try quick pickup/rock, or rub his back to get him back to sleep.
+- If a 2nd nap is needed: plan based on first nap length and wake-up time.
+- Nap routine = same as bedtime but no pajama change needed.
+
+=== MEAL TIPS ===
+- Make sure food isn't too hot and is cut up as needed to prevent choking.
+- Always strap him in the high chair and buckle. He's a little escape artist!
+- Bib on, silicone plate, silverware, water cup.
+- He might try to throw his plate/silverware — especially toward the end of the meal. Watch for it!
+- Encourage him to use utensils throughout the meal — he tries when reminded.
+- If not eating: try a favorite food to regain his interest.
+- LIFEVAC is nearby in case of choking.
+- Limit salt (bad for growing kidneys). Typical spices: pepper, garlic powder, paprika.
+
+BREAKFAST (2 fruits + a main):
+- Scrambled eggs with cheese
+- Oatmeal with a light drizzle of syrup
+- Plain yogurt
+- Bagel
+- Fruits: banana, cantaloupe, strawberries, apple, quartered blueberries or grapes
+- Pancake
+
+SNACK IDEAS:
+- Yogurt bites, puff snacks, whole wheat tortilla (bite-size), fruit, thin raw pepper strips, lettuce, cottage cheese
+
+LUNCH / DINNER (lean protein + whole grain + veggies + dairy):
+- Cheesy wheat noodles with chicken and peas
+- Chicken, dairy mashed potatoes, cooked carrots
+- Steak & bean quesadilla with cooked/diced peppers
+- Little Spoon meals (in freezer — organic, microwave per package directions — he likes some more than others)
+- Chicken fingers, quesadillas, grilled cheese, rice/noodles
+- Cooked vegetables: potato, carrots, broccoli, zucchini, red pepper, avocado
+- Canned: peas & carrots combo, refried beans
+
+CADE'S FAVORITE FOODS: cottage cheese, wheat tortillas, scrambled eggs, refried beans.
+
+=== DIAPER TIPS ===
+- Prep the diaper and wipes before you start.
+- Two modes: Easy Breezy OR Wrestlemania. If fussy, hand him something to play with (wipe package, hairbrush, etc.) to distract him.
+- Use the changing table and strap him in — go in with strength and pin him down. He'll settle.
+- Regular change: wipes + diaper cream.
+- Simple pee with no mess: skip wipes/cream and use the French (yellow cap) diaper moisturizer.
+- Wrap up and toss in the diaper pail (Randy will be shown how to change the bag).
+- If poop is very hard and he seems dehydrated: increase water, offer cantaloupe or watermelon.
+
+=== BEDTIME ROUTINE (& NAPS) ===
+Goal: 7pm. Can vary 30–60 min. Sleepy cues: yawns, staring blankly, saying "BAH!", general fussiness.
+Give bottle before nap/bed so his belly is extra full.
+
+STEPS:
+1. Make sure hallway light is OFF. Bedroom light and fan are ON.
+2. SPECIAL RITUAL — "BAH!": At the foot of the stairs, encourage Cade to blow kisses ("BAH!") toward Randy. Do the mouth/hand gesture — Randy does BAHs back. He might do it right away, halfway up the stairs, or not at all.
+3. Go into his room and lightly close the door.
+4. Put on his sleep sack on the changing basket.
+5. SPECIAL RITUAL — "Goodnight World!": While holding him, walk to the window and wave. Say "bye bye, World!" / "Goodnight, World!" — he often waves too. Then close the blinds all the way.
+6. Sit in the chair and read him a story. He sits on your lap facing outward, head on your chest, while you lightly rock and read. If he's too tired/fussy for the whole book, read a couple pages, say "The End," and close it.
+7. Turn on the sound machine (setting 1 — old western songs). Let him look at the color light and soak in the song for ~10 seconds.
+8. Turn off the light (pull the string — keep the fan on). Let him collapse into you and rock briefly.
+9. Slowly and carefully lower him into the crib (he may try to dive in!). Back or stomach — he usually turns to his tummy with his butt in the air.
+10. Rub his back lightly. If very tired: ~20 seconds then tiptoe out. If still stirring: up to 5 minutes.
+11. When settled and sleepy (doesn't need to be fully asleep), tiptoe out and firmly close the door.
+12. If he cries after you leave: usually self-settles. If it persists, use the Taking Cara Babies method: wait 5 min → go in and rub his back for 20 sec (don't pick up, say "it's okay") → then wait 10 min → then 15 min intervals.
+
+NOTE: "BAH!" can also happen randomly during the day — it may mean he's tired.
+
+=== WELLNESS & BATH TIPS ===
+SUNSCREEN: When outside for more than ~20 minutes, apply baby sunscreen everywhere. BabyBum roll-on is preferred, but any baby sunscreen works.
+
+TEETH BRUSHING (daily): After dinner while he's still active. Tiny drop of toothpaste. He usually opens his mouth willingly (he just wants to eat the toothpaste!).
+
+BOOGER / SNOT SUCKER (semi-daily): Use the Oogie Boogie for easy-to-reach boogers. For congestion, use the snot sucker (manual or electronic). Best done right before a bottle/meal so you can quickly distract him after. It's a two-person job — one holds him and pins arms, the other does the snot suck. He hates it. Wash and dry the device fully afterward.
+
+BATH (~2x/week): Done first thing in the morning, even before bottle or diaper. Takes about 10 minutes. In the master bathroom.
+- Prep towel on the edge of the bed in advance.
+- Water temp: 100–103°F (use the rubber duck thermometer). Add bubble bath and toys. Have washcloth and baby wash nearby.
+- Wash order: inside of eyes outward → rest of face → ears → body → hair (light head massage) → privates.
+- After rinsing, wrap him in the towel and bring downstairs. Lotion his entire body. Brush hair: firm brush first, then soft brush for style. Keep brushing with the soft brush as hair dries to keep it looking cute.
+- Then proceed with diaper, outfit, bottle, and breakfast as usual.
+
+NAILS (infrequent): Trimmed before they leave. May not need doing during your stay. If needed, ~every 1.5 weeks. Use the automatic nail file — it doesn't hurt him. Do when he's tired or distracted (put on Ms. Rachel). Easy!
+
+=== OUT AND ABOUT TIPS ===
+- Don't forget the stroller if you'll need it!
+- Cade can sit in restaurant high chairs and shopping carts.
+DIAPER BAG CHECKLIST: Diapers, wipes, diaper cream, extra outfit, sun hat, baby sunscreen, water cup, snacks, bib/placemat (if eating out), a few toys.
+
+WEEKEND ACTIVITY IDEAS:
+- Play in the front or back yard (bubbles, water activities)
+- Walk around the neighborhood
+- Flanders Park walk: navigate through the neighborhood → let him play at the park (he loves the slides) → loop around the nature trail → exit by the elementary school
+- Breakfast out: Village Inn, or Lazy Dog (Southlands mall)
+- Dinner out: Yo Mama's, Lazy Dog, Wood Paddle Pizza & Tap (small inside), BJ's Brewhouse, Old Chicago
+- Aurora Public Library (Central): 14949 E Alameda Pkwy, Aurora CO 80012. Kids sing & storytime Saturdays 10:15–10:45am — works great with his nap schedule!
+- Denver Zoo / Botanic Gardens / Nature & Science Museum / Children's Museum — Tanya can get free tickets any time via her annual membership!
+- Murphy Creek: Randy can hit golf balls; plenty of grass space for Cade to wander.
+- Saturday May 9th: Meet up with the Boyers — Tanya has it in her calendar. Could meet at Stanley Marketplace (halfway) or go to Denver Zoo.
+- Kids Empire (Aurora, kidsempire.com): wide age range with a toddler section.
+- Kids Wonder (Centennial, kidswonder.net): indoor playground specifically for ages 0–6.`;
+
+let apiKey = '';
+let conversationHistory = [];
+
+function submitKey() {
+  const input = document.getElementById('api-key-input');
+  const key = input.value.trim();
+  const errEl = document.getElementById('key-error');
+  if (!key.startsWith('sk-ant-') && !key.startsWith('sk-')) {
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+  apiKey = key;
+  document.getElementById('key-screen').style.display = 'none';
+}
+
+document.getElementById('api-key-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') submitKey();
+});
+
+function scrollToBottom() {
+  const msgs = document.getElementById('messages');
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function addMessage(role, text) {
+  const msgs = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  if (role === 'bot') {
+    div.innerHTML = '<div class="msg-avatar">👶</div><div class="bubble"></div>';
+    div.querySelector('.bubble').textContent = text;
+  } else {
+    div.innerHTML = '<div class="bubble"></div>';
+    div.querySelector('.bubble').textContent = text;
+  }
+  msgs.appendChild(div);
+  scrollToBottom();
+  return div;
+}
+
+function showTyping() {
+  const msgs = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'msg bot';
+  div.id = 'typing-indicator';
+  div.innerHTML = '<div class="msg-avatar">👶</div><div class="typing-bubble"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+  msgs.appendChild(div);
+  scrollToBottom();
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing-indicator');
+  if (t) t.remove();
+}
+
+async function sendMessage(text) {
+  const input = document.getElementById('user-input');
+  const userText = text || input.value.trim();
+  if (!userText) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+
+  addMessage('user', userText);
+  conversationHistory.push({ role: 'user', content: userText });
+
+  const btn = document.getElementById('send-btn');
+  btn.disabled = true;
+  showTyping();
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-5',
+        max_tokens: 1024,
+        system: SYSTEM_PROMPT,
+        messages: conversationHistory
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error?.message || 'API error');
+    }
+
+    const reply = data.content?.[0]?.text || "I'm sorry, I had trouble answering that. Try asking again!";
+    conversationHistory.push({ role: 'assistant', content: reply });
+
+    removeTyping();
+    addMessage('bot', reply);
+  } catch (err) {
+    removeTyping();
+    const errMsg = err.message.includes('401')
+      ? "The API key doesn't seem to be working. Please refresh the page and try a different key."
+      : "Hmm, I had a little trouble connecting. Please try again in a moment!";
+    addMessage('bot', errMsg);
+  }
+
+  btn.disabled = false;
+}
+
+function askChip(text) {
+  sendMessage(text);
+}
+
+const input = document.getElementById('user-input');
+input.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+input.addEventListener('input', function() {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 110) + 'px';
+});
+</script>
+</body>
+</html>
