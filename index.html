@@ -207,6 +207,20 @@
   }
   .msg.bot .bubble li { line-height: 1.55; }
   .msg.bot .bubble ul:last-child, .msg.bot .bubble ol:last-child { margin-bottom: 0; }
+  .citation {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--blue-dark);
+    background: var(--sky);
+    border: 1px solid var(--sky-mid);
+    border-radius: 20px;
+    padding: 4px 11px;
+    line-height: 1.4;
+  }
 
   .msg.user .bubble {
     background: linear-gradient(135deg, var(--blue), var(--blue-dark));
@@ -517,6 +531,11 @@ const SYSTEM_PROMPT = `You are a warm, friendly assistant named "Cade's Care Ass
 
 Answer questions based ONLY on the care instructions below. Keep answers clear, warm, practical, and reassuring. Use a friendly tone — these are loving grandparents, not medical professionals. If something isn't covered in the instructions, say so kindly and suggest they text Drew or Sara.
 
+FORMATTING RULES:
+- Use **bold** for key labels or headers within your answer.
+- Use bullet points for lists.
+- At the very end of every response, on its own line, add: "📄 From the care doc: [Section Name(s)]" — listing which section(s) the answer came from, using the exact section names as written in these instructions (e.g. "Bedtime Routine & Naps", "Meal Tips", "Benji Care"). This helps Mimi & Papa cross-reference the printed copy Drew & Sara left for them.
+
 CARE INSTRUCTIONS:
 
 === TRAVEL INFO ===
@@ -749,10 +768,15 @@ function renderMarkdown(text) {
   for (let i = 0; i < lines.length; i++) {
     let line = lines[i];
 
+    const citMatch = line.match(/^📄\s*From the care doc:\s*(.*)/i);
     const ulMatch = line.match(/^[-*]\s+(.*)/);
     const olMatch = line.match(/^(\d+)\.\s+(.*)/);
 
-    if (ulMatch) {
+    if (citMatch) {
+      if (inUl) { html += '</ul>'; inUl = false; }
+      if (inOl) { html += '</ol>'; inOl = false; }
+      html += '<div><span class="citation">📄 ' + inlineFormat(citMatch[1]) + '</span></div>';
+    } else if (ulMatch) {
       if (!inUl) { if (inOl) { html += '</ol>'; inOl = false; } html += '<ul>'; inUl = true; }
       html += '<li>' + inlineFormat(ulMatch[1]) + '</li>';
     } else if (olMatch) {
